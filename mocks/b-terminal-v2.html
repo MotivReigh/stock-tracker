@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mock B v2 — Pro Terminal Lite | Updraft</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  body { font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; font-feature-settings: 'tnum' 1; letter-spacing: -0.01em; }
+  .gain { color: rgb(5 150 105); }
+  .loss { color: rgb(220 38 38); }
+  .option-label { background: linear-gradient(90deg, rgb(254 240 138) 0%, transparent 100%); }
+</style>
+<script>
+  tailwind.config = { theme: { extend: { colors: { brand: { 50:'#eef2ff', 100:'#e0e7ff', 500:'#4f46e5', 600:'#4338ca', 700:'#3730a3' } } } } }
+</script>
+</head>
+<body class="bg-white text-slate-900 min-h-screen">
+
+<!-- Disclaimer ribbon -->
+<div class="bg-slate-900 text-slate-300 text-[11px] px-4 py-1 flex items-center justify-between mono">
+  <span>PERSONAL USE · NOT FINANCIAL ADVICE</span>
+  <span class="hidden sm:inline">SESSION 2026-05-07 10:42:18 ET · MKT OPEN</span>
+</div>
+
+<!-- Top bar -->
+<header class="border-b border-slate-200 bg-white sticky top-0 z-30">
+  <div class="px-4 h-12 flex items-center gap-3">
+    <div class="flex items-center gap-2">
+      <div class="h-6 w-6 bg-brand-600 grid place-items-center"><span class="text-white font-black text-[11px] mono">UP</span></div>
+      <span class="font-bold tracking-tight text-[15px]">UPDRAFT</span>
+      <span class="text-[10px] text-slate-500 mono ml-1">v0.1</span>
+    </div>
+
+    <nav class="hidden md:flex items-center gap-1 ml-4 text-[13px]">
+      <a class="px-3 py-1.5 bg-slate-100 rounded font-medium">Dashboard</a>
+      <a class="px-3 py-1.5 hover:bg-slate-100 rounded text-slate-600">Scans <span class="mono text-[10px] text-rose-600">[12]</span></a>
+      <a class="px-3 py-1.5 hover:bg-slate-100 rounded text-slate-600">Watchlists</a>
+      <a class="px-3 py-1.5 hover:bg-slate-100 rounded text-slate-600">Sectors</a>
+      <a class="px-3 py-1.5 hover:bg-slate-100 rounded text-slate-600">Journal</a>
+    </nav>
+
+    <div class="flex-1 max-w-sm ml-auto hidden sm:block">
+      <div class="relative">
+        <input type="text" placeholder="symbol, scan, sector…" class="w-full bg-slate-50 border border-slate-200 rounded px-3 py-1.5 text-[13px] mono focus:outline-none focus:border-brand-500" />
+        <kbd class="absolute right-2 top-1.5 text-[10px] text-slate-500 mono">⌘K</kbd>
+      </div>
+    </div>
+
+    <button class="relative h-8 w-8 hover:bg-slate-100 grid place-items-center rounded">
+      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 7 3 9H3c0-2 3-2 3-9Z" stroke="currentColor" stroke-width="2"/><path d="M10 21a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="2"/></svg>
+      <span class="absolute top-1 right-1.5 h-1.5 w-1.5 bg-rose-500 rounded-full"></span>
+    </button>
+    <div class="h-7 w-7 bg-slate-200 grid place-items-center text-[11px] font-bold mono">TH</div>
+  </div>
+
+  <!-- Ticker tape -->
+  <div class="border-t border-slate-200 bg-slate-50 overflow-hidden">
+    <div class="flex items-center gap-6 px-4 py-1 text-[12px] mono whitespace-nowrap">
+      <span class="text-slate-500">SPX</span><span class="font-semibold">5842.10</span><span class="gain">+0.62%</span>
+      <span class="text-slate-300">|</span>
+      <span class="text-slate-500">NDX</span><span class="font-semibold">20318.55</span><span class="gain">+1.14%</span>
+      <span class="text-slate-300">|</span>
+      <span class="text-slate-500">SOXX</span><span class="font-semibold">258.92</span><span class="gain">+2.10%</span>
+      <span class="text-slate-300">|</span>
+      <span class="text-slate-500">VIX</span><span class="font-semibold">14.21</span><span class="loss">−3.40%</span>
+      <span class="text-slate-300">|</span>
+      <span class="text-slate-500">DXY</span><span class="font-semibold">104.18</span><span class="loss">−0.22%</span>
+      <span class="text-slate-300">|</span>
+      <span class="text-slate-500">10Y</span><span class="font-semibold">4.218%</span><span class="gain">+2bp</span>
+      <span class="text-slate-300">|</span>
+      <span class="text-slate-500">BTC</span><span class="font-semibold">68,420</span><span class="gain">+1.05%</span>
+    </div>
+  </div>
+</header>
+
+<main class="p-3 md:p-4 space-y-4">
+
+  <!-- TOP SECTION OPTIONS — Pick one -->
+  <section class="space-y-3">
+    <div class="text-[10px] uppercase tracking-[0.2em] text-amber-700 font-bold border-b border-amber-300 pb-1">Choose a top section ↓ — three options shown stacked for comparison</div>
+
+    <!-- OPTION 1 — Market Breadth Bar -->
+    <div class="border-2 border-amber-400 rounded">
+      <div class="bg-amber-50 px-3 py-1.5 flex items-center justify-between text-[11px]">
+        <span class="font-bold text-amber-800">OPTION 1 · Market Breadth (regime check — am I trading in a trend-friendly tape?)</span>
+        <button class="text-[10px] mono bg-amber-200 hover:bg-amber-300 px-2 py-0.5 rounded">PICK THIS</button>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-5 divide-x divide-slate-200 border-t border-amber-300">
+        <div class="px-3 py-2.5">
+          <div class="text-[10px] uppercase tracking-wider text-slate-500">Advance/Decline</div>
+          <div class="mono font-bold text-base mt-0.5"><span class="gain">2,184</span><span class="text-slate-300 mx-1">/</span><span class="loss">1,219</span></div>
+          <div class="h-1.5 bg-slate-100 mt-1.5 flex"><div class="bg-emerald-500" style="width:64%"></div><div class="bg-rose-500" style="width:36%"></div></div>
+          <div class="text-[10px] mono text-slate-500 mt-0.5">A/D ratio 1.79 · bullish</div>
+        </div>
+        <div class="px-3 py-2.5">
+          <div class="text-[10px] uppercase tracking-wider text-slate-500">New 52W Highs / Lows</div>
+          <div class="mono font-bold text-base mt-0.5"><span class="gain">142</span><span class="text-slate-300 mx-1">/</span><span class="loss">18</span></div>
+          <div class="text-[10px] mono text-slate-500 mt-0.5">net +124 · expanding</div>
+          <div class="text-[10px] mono gain mt-0.5">▲ vs 5d avg +28%</div>
+        </div>
+        <div class="px-3 py-2.5">
+          <div class="text-[10px] uppercase tracking-wider text-slate-500">Up Vol / Down Vol</div>
+          <div class="mono font-bold text-base mt-0.5">3.4×</div>
+          <div class="h-1.5 bg-slate-100 mt-1.5"><div class="bg-emerald-500 h-full" style="width:78%"></div></div>
+          <div class="text-[10px] mono text-slate-500 mt-0.5">strong accumulation</div>
+        </div>
+        <div class="px-3 py-2.5">
+          <div class="text-[10px] uppercase tracking-wider text-slate-500">% S&amp;P Above 50-MA</div>
+          <div class="mono font-bold text-base mt-0.5">68.4%</div>
+          <div class="h-1.5 bg-slate-100 mt-1.5"><div class="bg-emerald-500 h-full" style="width:68%"></div></div>
+          <div class="text-[10px] mono text-slate-500 mt-0.5">healthy participation</div>
+        </div>
+        <div class="px-3 py-2.5">
+          <div class="text-[10px] uppercase tracking-wider text-slate-500">McClellan Oscillator</div>
+          <div class="mono font-bold text-base mt-0.5 gain">+84</div>
+          <div class="text-[10px] mono text-slate-500 mt-0.5">overbought territory</div>
+          <div class="text-[10px] mono gain mt-0.5">trend-favorable</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OPTION 2 — Featured Setup -->
+    <div class="border-2 border-amber-400 rounded">
+      <div class="bg-amber-50 px-3 py-1.5 flex items-center justify-between text-[11px]">
+        <span class="font-bold text-amber-800">OPTION 2 · Featured Setup (one big card — your highest-conviction signal right now)</span>
+        <button class="text-[10px] mono bg-amber-200 hover:bg-amber-300 px-2 py-0.5 rounded">PICK THIS</button>
+      </div>
+      <div class="border-t border-amber-300 grid grid-cols-1 md:grid-cols-12 gap-0 divide-y md:divide-y-0 md:divide-x divide-slate-200">
+        <div class="md:col-span-5 px-4 py-3">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-[10px] uppercase tracking-widest text-emerald-700 font-bold">Setup of the Hour</span>
+            <span class="text-[10px] mono bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">JUST BROKE OUT</span>
+          </div>
+          <div class="flex items-baseline gap-3">
+            <span class="font-bold text-2xl mono">MU</span>
+            <span class="text-sm text-slate-600">Micron Technology</span>
+          </div>
+          <div class="flex items-baseline gap-4 mt-2">
+            <span class="mono text-2xl font-bold">$112.45</span>
+            <span class="mono text-sm font-semibold gain">+2.80% · +$3.06</span>
+          </div>
+          <div class="text-[12px] text-slate-700 mt-2 leading-snug">52-week high day 2 on 3.5× avg volume; clears 18-month base. RS 96, MA aligned 20&gt;50&gt;200.</div>
+          <div class="flex gap-1.5 mt-2.5">
+            <button class="text-[11px] bg-brand-600 hover:bg-brand-700 text-white px-2.5 py-1 rounded mono">OPEN MU →</button>
+            <button class="text-[11px] border border-slate-300 hover:bg-slate-50 px-2.5 py-1 rounded mono">+ WATCHLIST</button>
+            <button class="text-[11px] border border-slate-300 hover:bg-slate-50 px-2.5 py-1 rounded mono">+ JOURNAL</button>
+          </div>
+        </div>
+        <div class="md:col-span-4 px-4 py-3">
+          <div class="text-[10px] uppercase tracking-widest text-slate-500 mb-1">5-Day Action</div>
+          <svg viewBox="0 0 200 60" class="w-full h-16">
+            <polyline points="0,52 22,49 44,46 66,42 88,38 110,30 132,24 154,16 176,10 200,6" fill="none" stroke="rgb(5 150 105)" stroke-width="2"/>
+            <polyline points="0,52 22,49 44,46 66,42 88,38 110,30 132,24 154,16 176,10 200,6" fill="rgb(5 150 105 / 0.08)" stroke="none"/>
+          </svg>
+          <div class="grid grid-cols-4 gap-2 text-[10px] mono mt-1">
+            <div><div class="text-slate-500">%1W</div><div class="gain font-semibold">+11.6%</div></div>
+            <div><div class="text-slate-500">%1M</div><div class="gain font-semibold">+24.0%</div></div>
+            <div><div class="text-slate-500">%3M</div><div class="gain font-semibold">+38.5%</div></div>
+            <div><div class="text-slate-500">RVol</div><div class="font-semibold">3.5×</div></div>
+          </div>
+        </div>
+        <div class="md:col-span-3 px-4 py-3">
+          <div class="text-[10px] uppercase tracking-widest text-slate-500 mb-1.5">Conviction Score</div>
+          <div class="flex items-baseline gap-2"><span class="mono text-3xl font-bold gain">94</span><span class="text-[11px] text-slate-500">/ 100</span></div>
+          <ul class="mt-2 text-[11px] space-y-0.5 mono">
+            <li class="flex justify-between"><span class="text-slate-600">Volume confirmation</span><span class="gain">✓</span></li>
+            <li class="flex justify-between"><span class="text-slate-600">52W high break</span><span class="gain">✓</span></li>
+            <li class="flex justify-between"><span class="text-slate-600">Sector RS &gt; 80</span><span class="gain">✓</span></li>
+            <li class="flex justify-between"><span class="text-slate-600">MA alignment</span><span class="gain">✓</span></li>
+            <li class="flex justify-between"><span class="text-slate-600">RSI &lt; 75</span><span class="loss">✗ 78</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- OPTION 3 — Mover Highlights -->
+    <div class="border-2 border-amber-400 rounded">
+      <div class="bg-amber-50 px-3 py-1.5 flex items-center justify-between text-[11px]">
+        <span class="font-bold text-amber-800">OPTION 3 · Mover Highlights (the four most actionable single tickers right now)</span>
+        <button class="text-[10px] mono bg-amber-200 hover:bg-amber-300 px-2 py-0.5 rounded">PICK THIS</button>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-4 divide-x divide-slate-200 border-t border-amber-300">
+        <div class="px-3 py-2.5 hover:bg-emerald-50/40 cursor-pointer">
+          <div class="text-[10px] uppercase tracking-wider text-slate-500">Top Gainer · $2B+</div>
+          <div class="flex items-baseline gap-2 mt-0.5"><span class="font-bold mono">NVDA</span><span class="text-[11px] text-slate-500 truncate">NVIDIA</span></div>
+          <div class="mono font-semibold mt-0.5">$891.20</div>
+          <div class="text-sm gain mono font-bold">+4.20%</div>
+          <svg viewBox="0 0 100 16" class="w-full h-4 mt-1"><polyline points="0,12 12,11 24,9 36,10 48,7 60,5 72,4 84,3 96,2" fill="none" stroke="rgb(5 150 105)" stroke-width="1.4"/></svg>
+        </div>
+        <div class="px-3 py-2.5 hover:bg-emerald-50/40 cursor-pointer">
+          <div class="text-[10px] uppercase tracking-wider text-slate-500">Volume Leader</div>
+          <div class="flex items-baseline gap-2 mt-0.5"><span class="font-bold mono">MU</span><span class="text-[11px] text-slate-500 truncate">Micron</span></div>
+          <div class="mono font-semibold mt-0.5">$112.45</div>
+          <div class="text-sm gain mono font-bold">RVol 3.5×</div>
+          <svg viewBox="0 0 100 16" class="w-full h-4 mt-1"><polyline points="0,14 12,12 24,11 36,9 48,7 60,5 72,4 84,3 96,2" fill="none" stroke="rgb(79 70 229)" stroke-width="1.4"/></svg>
+        </div>
+        <div class="px-3 py-2.5 hover:bg-emerald-50/40 cursor-pointer">
+          <div class="text-[10px] uppercase tracking-wider text-slate-500">Biggest Gap-Up</div>
+          <div class="flex items-baseline gap-2 mt-0.5"><span class="font-bold mono">ARM</span><span class="text-[11px] text-slate-500 truncate">Arm Holdings</span></div>
+          <div class="mono font-semibold mt-0.5">$138.90</div>
+          <div class="text-sm gain mono font-bold">Gap +2.4%</div>
+          <svg viewBox="0 0 100 16" class="w-full h-4 mt-1"><polyline points="0,13 12,12 24,8 36,7 48,6 60,5 72,4 84,4 96,3" fill="none" stroke="rgb(5 150 105)" stroke-width="1.4"/></svg>
+        </div>
+        <div class="px-3 py-2.5 hover:bg-rose-50/40 cursor-pointer">
+          <div class="text-[10px] uppercase tracking-wider text-slate-500">Top Decliner · $2B+</div>
+          <div class="flex items-baseline gap-2 mt-0.5"><span class="font-bold mono">PFE</span><span class="text-[11px] text-slate-500 truncate">Pfizer</span></div>
+          <div class="mono font-semibold mt-0.5">$26.42</div>
+          <div class="text-sm loss mono font-bold">−3.10%</div>
+          <svg viewBox="0 0 100 16" class="w-full h-4 mt-1"><polyline points="0,4 12,5 24,7 36,8 48,10 60,11 72,12 84,13 96,14" fill="none" stroke="rgb(220 38 38)" stroke-width="1.4"/></svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DIVIDER -->
+  <div class="text-center text-[10px] text-slate-400 mono uppercase tracking-widest py-1 border-y border-slate-100">↓ Rest of the dashboard renders the same regardless of which top option you pick ↓</div>
+
+  <!-- Main grid: scans + sector heat -->
+  <section class="grid grid-cols-1 xl:grid-cols-12 gap-3">
+
+    <!-- Scan results table (large) -->
+    <div class="xl:col-span-8 border border-slate-200">
+      <div class="px-3 py-2 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+        <div class="flex items-center gap-2">
+          <h3 class="font-bold text-[13px] uppercase tracking-wider">Trend Spotter Results</h3>
+          <span class="text-[11px] text-slate-500 mono">21 hits · sorted RS desc</span>
+        </div>
+        <div class="flex gap-1 text-[11px] mono">
+          <button class="px-2 py-0.5 bg-slate-900 text-white">ALL</button>
+          <button class="px-2 py-0.5 border border-slate-200 hover:bg-slate-100">PRE</button>
+          <button class="px-2 py-0.5 border border-slate-200 hover:bg-slate-100">BREAK</button>
+          <button class="px-2 py-0.5 border border-slate-200 hover:bg-slate-100">TREND</button>
+        </div>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-[12px]">
+          <thead class="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-wider">
+            <tr class="border-b border-slate-200">
+              <th class="text-left px-3 py-2 font-medium">Sym</th>
+              <th class="text-left px-2 py-2 font-medium">Stage</th>
+              <th class="text-right px-2 py-2 font-medium">Last</th>
+              <th class="text-right px-2 py-2 font-medium">%1D</th>
+              <th class="text-right px-2 py-2 font-medium">%1W</th>
+              <th class="text-right px-2 py-2 font-medium">%1M</th>
+              <th class="text-right px-2 py-2 font-medium">%3M</th>
+              <th class="text-right px-2 py-2 font-medium">RVol</th>
+              <th class="text-right px-2 py-2 font-medium">RS</th>
+              <th class="text-left px-2 py-2 font-medium">MA</th>
+              <th class="text-left px-2 py-2 font-medium">Sector</th>
+            </tr>
+          </thead>
+          <tbody class="mono divide-y divide-slate-100">
+            <tr class="hover:bg-brand-50/40"><td class="px-3 py-1.5"><span class="font-bold">NVDA</span></td><td class="px-2"><span class="text-[10px] bg-brand-100 text-brand-700 px-1.5 py-0.5 rounded-sm font-bold">TREND</span></td><td class="px-2 text-right">891.20</td><td class="px-2 text-right gain">+4.20</td><td class="px-2 text-right gain">+9.10</td><td class="px-2 text-right gain">+18.4</td><td class="px-2 text-right gain">+42.1</td><td class="px-2 text-right">2.10×</td><td class="px-2 text-right font-semibold">98</td><td class="px-2 text-[10px] gain">20&gt;50&gt;200</td><td class="px-2 text-[10px] text-slate-600">Semis</td></tr>
+            <tr class="hover:bg-brand-50/40"><td class="px-3 py-1.5"><span class="font-bold">MU</span></td><td class="px-2"><span class="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-sm font-bold">BREAK</span></td><td class="px-2 text-right">112.45</td><td class="px-2 text-right gain">+2.80</td><td class="px-2 text-right gain">+11.6</td><td class="px-2 text-right gain">+24.0</td><td class="px-2 text-right gain">+38.5</td><td class="px-2 text-right">3.50×</td><td class="px-2 text-right font-semibold">96</td><td class="px-2 text-[10px] gain">20&gt;50&gt;200</td><td class="px-2 text-[10px] text-slate-600">Semis</td></tr>
+            <tr class="hover:bg-brand-50/40"><td class="px-3 py-1.5"><span class="font-bold">AVGO</span></td><td class="px-2"><span class="text-[10px] bg-brand-100 text-brand-700 px-1.5 py-0.5 rounded-sm font-bold">TREND</span></td><td class="px-2 text-right">1452.80</td><td class="px-2 text-right gain">+3.10</td><td class="px-2 text-right gain">+5.40</td><td class="px-2 text-right gain">+12.2</td><td class="px-2 text-right gain">+28.0</td><td class="px-2 text-right">1.40×</td><td class="px-2 text-right font-semibold">94</td><td class="px-2 text-[10px] gain">20&gt;50&gt;200</td><td class="px-2 text-[10px] text-slate-600">Semis</td></tr>
+            <tr class="hover:bg-brand-50/40"><td class="px-3 py-1.5"><span class="font-bold">ARM</span></td><td class="px-2"><span class="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-sm font-bold">BREAK</span></td><td class="px-2 text-right">138.90</td><td class="px-2 text-right gain">+2.20</td><td class="px-2 text-right gain">+8.40</td><td class="px-2 text-right gain">+15.7</td><td class="px-2 text-right gain">+22.3</td><td class="px-2 text-right">1.70×</td><td class="px-2 text-right font-semibold">92</td><td class="px-2 text-[10px] gain">20&gt;50&gt;200</td><td class="px-2 text-[10px] text-slate-600">Semis</td></tr>
+            <tr class="hover:bg-brand-50/40"><td class="px-3 py-1.5"><span class="font-bold">TSM</span></td><td class="px-2"><span class="text-[10px] bg-brand-100 text-brand-700 px-1.5 py-0.5 rounded-sm font-bold">TREND</span></td><td class="px-2 text-right">182.30</td><td class="px-2 text-right gain">+1.80</td><td class="px-2 text-right gain">+4.20</td><td class="px-2 text-right gain">+10.5</td><td class="px-2 text-right gain">+19.8</td><td class="px-2 text-right">1.10×</td><td class="px-2 text-right font-semibold">91</td><td class="px-2 text-[10px] gain">20&gt;50&gt;200</td><td class="px-2 text-[10px] text-slate-600">Semis</td></tr>
+            <tr class="hover:bg-brand-50/40"><td class="px-3 py-1.5"><span class="font-bold">KLAC</span></td><td class="px-2"><span class="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-sm font-bold">BREAK</span></td><td class="px-2 text-right">821.30</td><td class="px-2 text-right gain">+1.60</td><td class="px-2 text-right gain">+6.80</td><td class="px-2 text-right gain">+14.1</td><td class="px-2 text-right gain">+25.2</td><td class="px-2 text-right">2.00×</td><td class="px-2 text-right font-semibold">90</td><td class="px-2 text-[10px] gain">20&gt;50&gt;200</td><td class="px-2 text-[10px] text-slate-600">Semis</td></tr>
+            <tr class="hover:bg-brand-50/40"><td class="px-3 py-1.5"><span class="font-bold">AMD</span></td><td class="px-2"><span class="text-[10px] bg-brand-100 text-brand-700 px-1.5 py-0.5 rounded-sm font-bold">TREND</span></td><td class="px-2 text-right">172.10</td><td class="px-2 text-right gain">+2.40</td><td class="px-2 text-right gain">+3.10</td><td class="px-2 text-right gain">+7.80</td><td class="px-2 text-right gain">+14.6</td><td class="px-2 text-right">1.20×</td><td class="px-2 text-right font-semibold">88</td><td class="px-2 text-[10px] gain">20&gt;50&gt;200</td><td class="px-2 text-[10px] text-slate-600">Semis</td></tr>
+            <tr class="hover:bg-brand-50/40"><td class="px-3 py-1.5"><span class="font-bold">VRT</span></td><td class="px-2"><span class="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-sm font-bold">PRE</span></td><td class="px-2 text-right">118.55</td><td class="px-2 text-right gain">+1.20</td><td class="px-2 text-right">+0.40</td><td class="px-2 text-right gain">+2.10</td><td class="px-2 text-right gain">+18.4</td><td class="px-2 text-right">0.80×</td><td class="px-2 text-right font-semibold">86</td><td class="px-2 text-[10px] gain">20&gt;50&gt;200</td><td class="px-2 text-[10px] text-slate-600">Industrials</td></tr>
+            <tr class="hover:bg-brand-50/40"><td class="px-3 py-1.5"><span class="font-bold">ANET</span></td><td class="px-2"><span class="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-sm font-bold">PRE</span></td><td class="px-2 text-right">398.40</td><td class="px-2 text-right gain">+0.40</td><td class="px-2 text-right gain">+1.10</td><td class="px-2 text-right gain">+2.60</td><td class="px-2 text-right gain">+15.2</td><td class="px-2 text-right">0.60×</td><td class="px-2 text-right font-semibold">84</td><td class="px-2 text-[10px] gain">20≈50&gt;200</td><td class="px-2 text-[10px] text-slate-600">Tech</td></tr>
+            <tr class="hover:bg-brand-50/40"><td class="px-3 py-1.5"><span class="font-bold">CRWD</span></td><td class="px-2"><span class="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-sm font-bold">PRE</span></td><td class="px-2 text-right">362.10</td><td class="px-2 text-right gain">+0.70</td><td class="px-2 text-right">−0.30</td><td class="px-2 text-right gain">+1.80</td><td class="px-2 text-right gain">+8.40</td><td class="px-2 text-right">0.70×</td><td class="px-2 text-right font-semibold">82</td><td class="px-2 text-[10px] gain">20≈50&gt;200</td><td class="px-2 text-[10px] text-slate-600">Tech</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="px-3 py-2 border-t border-slate-200 text-[11px] mono text-slate-500 flex items-center justify-between">
+        <span>showing 10 of 21 · refresh in 4:18</span>
+        <span class="text-brand-700 hover:underline cursor-pointer">[ load more ]</span>
+      </div>
+    </div>
+
+    <!-- Sector heat -->
+    <div class="xl:col-span-4 border border-slate-200">
+      <div class="px-3 py-2 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+        <h3 class="font-bold text-[13px] uppercase tracking-wider">Sector Heat</h3>
+        <div class="flex gap-1 text-[10px] mono">
+          <button class="px-1.5 py-0.5 bg-slate-900 text-white">1D</button>
+          <button class="px-1.5 py-0.5 border border-slate-200">1W</button>
+          <button class="px-1.5 py-0.5 border border-slate-200">1M</button>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-px bg-slate-200 p-px">
+        <div class="bg-emerald-200 p-3"><div class="text-[11px] font-bold">Semiconductors</div><div class="mono font-bold text-emerald-900">+2.10%</div></div>
+        <div class="bg-emerald-100 p-3"><div class="text-[11px] font-bold">Technology</div><div class="mono font-bold text-emerald-900">+1.40%</div></div>
+        <div class="bg-emerald-100 p-3"><div class="text-[11px] font-bold">Energy</div><div class="mono font-bold text-emerald-900">+0.90%</div></div>
+        <div class="bg-emerald-50 p-3"><div class="text-[11px] font-bold">Industrials</div><div class="mono font-bold text-emerald-900">+0.40%</div></div>
+        <div class="bg-emerald-50 p-3"><div class="text-[11px] font-bold">Comm Svcs</div><div class="mono font-bold text-emerald-900">+0.10%</div></div>
+        <div class="bg-emerald-50 p-3"><div class="text-[11px] font-bold">Cons Disc</div><div class="mono font-bold text-emerald-900">+0.20%</div></div>
+        <div class="bg-rose-50 p-3"><div class="text-[11px] font-bold">Materials</div><div class="mono font-bold text-rose-900">−0.10%</div></div>
+        <div class="bg-rose-50 p-3"><div class="text-[11px] font-bold">Real Estate</div><div class="mono font-bold text-rose-900">−0.20%</div></div>
+        <div class="bg-rose-100 p-3"><div class="text-[11px] font-bold">Health Care</div><div class="mono font-bold text-rose-900">−0.30%</div></div>
+        <div class="bg-rose-100 p-3"><div class="text-[11px] font-bold">Cons Staples</div><div class="mono font-bold text-rose-900">−0.40%</div></div>
+        <div class="bg-rose-100 p-3"><div class="text-[11px] font-bold">Financials</div><div class="mono font-bold text-rose-900">−0.50%</div></div>
+        <div class="bg-rose-200 p-3"><div class="text-[11px] font-bold">Utilities</div><div class="mono font-bold text-rose-900">−0.60%</div></div>
+      </div>
+      <div class="px-3 py-2 border-t border-slate-200 text-[11px] mono text-slate-500">via sector ETFs · XLK SOXX XLE XLI XLC XLY XLB XLRE XLV XLP XLF XLU</div>
+    </div>
+  </section>
+
+  <!-- Bottom row: alerts, watchlist, news -->
+  <section class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+
+    <!-- Alerts log -->
+    <div class="border border-slate-200">
+      <div class="px-3 py-2 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+        <h3 class="font-bold text-[13px] uppercase tracking-wider">Alerts Log</h3>
+        <span class="text-[10px] mono text-rose-600">● 3 NEW · push + slack</span>
+      </div>
+      <ul class="text-[12px] divide-y divide-slate-100">
+        <li class="px-3 py-2 grid grid-cols-[44px_1fr_auto] gap-2 items-center hover:bg-slate-50">
+          <span class="text-[10px] mono text-slate-500">09:34</span>
+          <div><span class="font-bold mono">MU</span> <span class="text-emerald-700 mono text-[10px]">[BREAK]</span> 52W high + vol surge 3.5×</div>
+          <span class="mono gain font-semibold">+2.80%</span>
+        </li>
+        <li class="px-3 py-2 grid grid-cols-[44px_1fr_auto] gap-2 items-center hover:bg-slate-50">
+          <span class="text-[10px] mono text-slate-500">09:31</span>
+          <div><span class="font-bold mono">ARM</span> <span class="text-emerald-700 mono text-[10px]">[BREAK]</span> 50d high + vol 1.7×</div>
+          <span class="mono gain font-semibold">+2.20%</span>
+        </li>
+        <li class="px-3 py-2 grid grid-cols-[44px_1fr_auto] gap-2 items-center hover:bg-slate-50">
+          <span class="text-[10px] mono text-slate-500">09:28</span>
+          <div><span class="font-bold mono">KLAC</span> <span class="text-brand-700 mono text-[10px]">[TREND]</span> Pullback to 20-MA · RS 90</div>
+          <span class="mono gain font-semibold">+1.60%</span>
+        </li>
+        <li class="px-3 py-2 grid grid-cols-[44px_1fr_auto] gap-2 items-center text-slate-500 hover:bg-slate-50">
+          <span class="text-[10px] mono">09:15</span>
+          <div><span class="font-bold mono">VRT</span> <span class="mono text-[10px]">[PRE]</span> Tight consolidation · 5wk</div>
+          <span class="mono gain">+1.20%</span>
+        </li>
+        <li class="px-3 py-2 grid grid-cols-[44px_1fr_auto] gap-2 items-center text-slate-500 hover:bg-slate-50">
+          <span class="text-[10px] mono">08:52</span>
+          <div><span class="font-bold mono">ANET</span> <span class="mono text-[10px]">[PRE]</span> MA compression</div>
+          <span class="mono gain">+0.40%</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Watchlist -->
+    <div class="border border-slate-200">
+      <div class="px-3 py-2 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+        <h3 class="font-bold text-[13px] uppercase tracking-wider">Watchlist · Semis</h3>
+        <span class="text-[10px] mono text-slate-500">12 tickers</span>
+      </div>
+      <table class="w-full text-[12px] mono">
+        <tbody class="divide-y divide-slate-100">
+          <tr class="hover:bg-slate-50"><td class="px-3 py-1.5 font-bold">NVDA</td><td class="px-2 text-right">891.20</td><td class="px-2 text-right gain font-semibold">+4.20%</td><td class="px-2 text-right text-[10px] text-slate-500">2.1×</td></tr>
+          <tr class="hover:bg-slate-50"><td class="px-3 py-1.5 font-bold">AVGO</td><td class="px-2 text-right">1452.80</td><td class="px-2 text-right gain font-semibold">+3.10%</td><td class="px-2 text-right text-[10px] text-slate-500">1.4×</td></tr>
+          <tr class="hover:bg-slate-50"><td class="px-3 py-1.5 font-bold">MU</td><td class="px-2 text-right">112.45</td><td class="px-2 text-right gain font-semibold">+2.80%</td><td class="px-2 text-right text-[10px] text-slate-500">3.5×</td></tr>
+          <tr class="hover:bg-slate-50"><td class="px-3 py-1.5 font-bold">AMD</td><td class="px-2 text-right">172.10</td><td class="px-2 text-right gain font-semibold">+2.40%</td><td class="px-2 text-right text-[10px] text-slate-500">1.2×</td></tr>
+          <tr class="hover:bg-slate-50"><td class="px-3 py-1.5 font-bold">ARM</td><td class="px-2 text-right">138.90</td><td class="px-2 text-right gain font-semibold">+2.20%</td><td class="px-2 text-right text-[10px] text-slate-500">1.7×</td></tr>
+          <tr class="hover:bg-slate-50"><td class="px-3 py-1.5 font-bold">TSM</td><td class="px-2 text-right">182.30</td><td class="px-2 text-right gain font-semibold">+1.80%</td><td class="px-2 text-right text-[10px] text-slate-500">1.1×</td></tr>
+          <tr class="hover:bg-slate-50"><td class="px-3 py-1.5 font-bold">KLAC</td><td class="px-2 text-right">821.30</td><td class="px-2 text-right gain font-semibold">+1.60%</td><td class="px-2 text-right text-[10px] text-slate-500">2.0×</td></tr>
+          <tr class="hover:bg-slate-50"><td class="px-3 py-1.5 font-bold">LRCX</td><td class="px-2 text-right">912.40</td><td class="px-2 text-right gain font-semibold">+1.20%</td><td class="px-2 text-right text-[10px] text-slate-500">0.9×</td></tr>
+          <tr class="hover:bg-slate-50"><td class="px-3 py-1.5 font-bold">AMAT</td><td class="px-2 text-right">218.70</td><td class="px-2 text-right gain font-semibold">+0.80%</td><td class="px-2 text-right text-[10px] text-slate-500">0.8×</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- News -->
+    <div class="border border-slate-200">
+      <div class="px-3 py-2 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+        <h3 class="font-bold text-[13px] uppercase tracking-wider">News · Watchlist</h3>
+        <span class="text-[10px] mono text-slate-500">last 60m</span>
+      </div>
+      <ul class="text-[12px] divide-y divide-slate-100">
+        <li class="px-3 py-2 hover:bg-slate-50">
+          <div class="flex items-center gap-2 text-[10px] mono text-slate-500"><span class="font-bold text-slate-900">MU</span><span>·</span><span>09:42 ET</span><span>·</span><span>CNBC</span></div>
+          <div class="font-medium leading-snug mt-0.5">Micron raises HBM3E guidance, AI memory demand outpacing supply</div>
+        </li>
+        <li class="px-3 py-2 hover:bg-slate-50">
+          <div class="flex items-center gap-2 text-[10px] mono text-slate-500"><span class="font-bold text-slate-900">AVGO</span><span>·</span><span>09:18 ET</span><span>·</span><span>Bloomberg</span></div>
+          <div class="font-medium leading-snug mt-0.5">Broadcom announces $10B share buyback authorization</div>
+        </li>
+        <li class="px-3 py-2 hover:bg-slate-50">
+          <div class="flex items-center gap-2 text-[10px] mono text-slate-500"><span class="font-bold text-slate-900">ARM</span><span>·</span><span>09:05 ET</span><span>·</span><span>Reuters</span></div>
+          <div class="font-medium leading-snug mt-0.5">Arm Holdings surges on AI design wins; RBC raises target to $160</div>
+        </li>
+        <li class="px-3 py-2 hover:bg-slate-50">
+          <div class="flex items-center gap-2 text-[10px] mono text-slate-500"><span class="font-bold text-slate-900">SOXX</span><span>·</span><span>08:51 ET</span><span>·</span><span>Barron's</span></div>
+          <div class="font-medium leading-snug mt-0.5">Semiconductor sector breakout: SOXX clears all-time high</div>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="text-center text-[10px] text-slate-500 mono py-4">
+    UPDRAFT · BUILD 0.1 · PERSONAL USE · NOT FINANCIAL ADVICE · TRADE AT YOUR OWN RISK
+  </footer>
+</main>
+</body>
+</html>
