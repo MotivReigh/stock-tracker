@@ -32,6 +32,8 @@ Greenfield project at `/Users/reighlan/projects/stock-tracker` (`main` branch, c
 - DB: Supabase Postgres; **all tables prefixed `updraft_` so this project can share a database with other apps without collision**
 - Mobile: equal-priority, must work great on phone
 - Aesthetic: light-mode primary with dark toggle, hybrid dense + clean
+- **Dual layout mode**: user can switch the dashboard between two visual presentations of the same data — `terminal` (Mock B v2 styling, dense data tables, mono-heavy, indigo accent) and `editorial` (Mock C v2 styling, serif headlines, newspaper-column hierarchy, amber accent). Selection persisted in `updraft_settings.dashboard_layout` and exposed via a dropdown in the top nav.
+- **Mock B top strip**: Mover Highlights (Option 3) — four single-ticker tiles: top gainer, volume leader, biggest gap-up, top decliner.
 - Win: replaces my daily screening routine AND catches at least one big move I'd have missed
 
 ### CUJ documents (read first when planning UI work)
@@ -48,7 +50,7 @@ Greenfield project at `/Users/reighlan/projects/stock-tracker` (`main` branch, c
 | Table | Columns (key fields) |
 |---|---|
 | `updraft_users` | id, email, created_at — single account, auth-ready |
-| `updraft_settings` | user_id, slack_webhook_url, push_enabled, slack_enabled, sms_enabled, theme |
+| `updraft_settings` | user_id, slack_webhook_url, push_enabled, slack_enabled, sms_enabled, theme, dashboard_layout ('terminal' \| 'editorial') |
 | `updraft_watchlists` | id, user_id, name, sort_index, created_at |
 | `updraft_watchlist_items` | watchlist_id, symbol, added_at |
 | `updraft_scans` | id, user_id, name, type ('preset' \| 'custom'), definition jsonb, enabled |
