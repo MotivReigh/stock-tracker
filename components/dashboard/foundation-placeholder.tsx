@@ -5,7 +5,7 @@ import { CheckCircle2, Circle } from "lucide-react";
 
 const PHASES = [
   { num: 1, title: "Foundation", description: "Scaffold, layout, theme, password gate", done: true },
-  { num: 2, title: "Data layer", description: "Finnhub client, Redis cache, Supabase schema", done: false },
+  { num: 2, title: "Data layer", description: "Finnhub client + token bucket, Redis cache, Supabase schema, universe seed (143 symbols), API routes", done: true },
   { num: 3, title: "Dashboard", description: "Top movers, sectors, watchlist, alerts, news", done: false },
   { num: 4, title: "Stock detail", description: "Charts, key stats, news, journal", done: false },
   { num: 5, title: "Watchlists", description: "CRUD for unlimited named lists", done: false },

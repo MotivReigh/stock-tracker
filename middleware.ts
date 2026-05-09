@@ -22,6 +22,11 @@ export function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
+  // For API routes, return 401 JSON rather than HTML redirecting to /login.
+  if (pathname.startsWith("/api/")) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+
   const url = req.nextUrl.clone();
   url.pathname = "/login";
   url.searchParams.set("from", pathname);
