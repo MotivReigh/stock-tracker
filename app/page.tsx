@@ -1,10 +1,16 @@
 import { Shell } from "@/components/layout/shell";
-import { FoundationPlaceholder } from "@/components/dashboard/foundation-placeholder";
+import { Dashboard } from "@/components/dashboard/dashboard";
+import { getDashboardData } from "@/lib/dashboard/data";
 
-export default function DashboardPage() {
+// Quote/news fetches are dynamic; force fresh data on each request.
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+export default async function DashboardPage() {
+  const data = await getDashboardData();
   return (
     <Shell>
-      <FoundationPlaceholder />
+      <Dashboard data={data} />
     </Shell>
   );
 }
