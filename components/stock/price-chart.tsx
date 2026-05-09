@@ -189,24 +189,7 @@ export function PriceChart({ bars }: { bars: DailyBar[] }) {
   }, [visibleBars, showMa20, showMa50, showMa200]);
 
   if (bars.length === 0) {
-    return (
-      <div className="border border-app">
-        <div className="px-3 py-2 border-b border-app bg-slate-50 dark:bg-slate-900/50">
-          <h3 className="font-bold text-[13px] uppercase tracking-wider">
-            Price Chart
-          </h3>
-        </div>
-        <div className="h-[480px] grid place-items-center text-sm text-muted px-6 text-center">
-          <div>
-            <p className="font-medium">No candle data available</p>
-            <p className="text-xs mt-1">
-              Finnhub's free tier may not return candles for every US symbol.
-              Try opening the chart in TradingView via the link above.
-            </p>
-          </div>
-        </div>
-      </div>
-    );
+    return <NoChartFallback />;
   }
 
   return (
@@ -243,6 +226,35 @@ export function PriceChart({ bars }: { bars: DailyBar[] }) {
         </div>
       </div>
       <div ref={containerRef} className="w-full" />
+    </div>
+  );
+}
+
+function NoChartFallback() {
+  return (
+    <div className="border border-app">
+      <div className="px-3 py-2 border-b border-app bg-slate-50 dark:bg-slate-900/50">
+        <h3 className="font-bold text-[13px] uppercase tracking-wider">
+          Price Chart
+        </h3>
+      </div>
+      <div className="h-[480px] grid place-items-center px-6 text-center">
+        <div className="max-w-md text-sm text-muted space-y-2">
+          <p className="font-medium text-slate-700 dark:text-slate-200">
+            Chart unavailable right now
+          </p>
+          <p className="text-xs">
+            Finnhub's free tier doesn't include historical candles, so we route
+            chart data through Yahoo Finance. They occasionally throttle requests
+            from a single IP — try again in a few minutes.
+          </p>
+          <p className="text-xs">
+            Use{" "}
+            <span className="underline underline-offset-2">Open in TradingView</span>
+            {" "}above for the live chart in the meantime.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
