@@ -70,7 +70,7 @@ Greenfield project at `/Users/reighlan/projects/stock-tracker` (`main` branch, c
   - **Full universe quote refresh** — every 10 min during market hours
   - **Scan runner** — every 10 min during market hours
   - **Alerts dispatcher** — every 1 min
-- Upstash Redis (free tier) — hot cache, protects Finnhub 60 req/min limit
+- Redis (Redis Cloud / self-hosted / Upstash TCP) (free tier) — hot cache, protects Finnhub 60 req/min limit
 - **Slack: incoming webhook URL stored per-user in `updraft_settings.slack_webhook_url`. Block Kit message format. Test button on settings page. Upgrade path: full Slack app for richer interactions (post-MVP).**
 - Web Push (VAPID keys in env, subscriptions in `updraft_push_subscriptions`)
 - SMS adapter: Twilio-shaped interface, no-op implementation for MVP
@@ -153,7 +153,7 @@ tests/
 
 ### Phase 1 — Foundation
 1. Initialize Next.js 15 + TypeScript + Tailwind + shadcn/ui
-2. Install deps: `@supabase/supabase-js`, `@upstash/redis`, `lightweight-charts`, `zod`, `date-fns`, `lucide-react`, `next-themes`, `web-push`, `vitest`, `@playwright/test`
+2. Install deps: `@supabase/supabase-js`, `redis`, `lightweight-charts`, `zod`, `date-fns`, `lucide-react`, `next-themes`, `web-push`, `vitest`, `@playwright/test`
 3. Build app shell: top nav + responsive sidebar + mobile drawer + theme toggle (light default)
 4. Password gate middleware
 5. Settings page skeleton
@@ -212,7 +212,7 @@ tests/
 30. Push to GitHub
 31. Connect Vercel; set env vars
 32. Provision Supabase project + run migrations
-33. Provision Upstash Redis
+33. Provision Redis (Redis Cloud / self-hosted / Upstash TCP)
 34. Configure cron jobs + verify universe seed + first scan run
 
 ## 6. Risks and Assumptions
@@ -317,12 +317,12 @@ E2E runs against a Vercel preview deployment with seeded fixtures and a mock Fin
 ## 8. Deployment Guide
 
 1. Create Supabase project; run `supabase/migrations/0001_init.sql` (creates `updraft_*` tables)
-2. Create Upstash Redis instance; copy REST URL + token
+2. Create Redis instance (Redis Cloud free tier or equivalent); copy `REDIS_URL` connection string
 3. Generate VAPID keys: `npx web-push generate-vapid-keys`
 4. Set Vercel env vars:
    - `FINNHUB_API_KEY`
    - `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `SUPABASE_ANON_KEY`
-   - `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`
+   - `REDIS_URL`
    - `APP_PASSWORD`
    - `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` (mailto:)
    - `CRON_SECRET`
