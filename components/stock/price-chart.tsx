@@ -239,19 +239,35 @@ function NoChartFallback() {
         </h3>
       </div>
       <div className="h-[480px] grid place-items-center px-6 text-center">
-        <div className="max-w-md text-sm text-muted space-y-2">
+        <div className="max-w-md text-sm text-muted space-y-3">
           <p className="font-medium text-slate-700 dark:text-slate-200">
-            Chart unavailable right now
+            No candle data available
           </p>
           <p className="text-xs">
-            Finnhub's free tier doesn't include historical candles, so we route
-            chart data through Yahoo Finance. They occasionally throttle requests
-            from a single IP — try again in a few minutes.
+            Finnhub's free tier doesn't include candles, so we use Twelve Data
+            (when configured) or Yahoo Finance as a fallback. Yahoo can rate-limit
+            an IP after heavy use — try again in a few minutes.
           </p>
           <p className="text-xs">
-            Use{" "}
-            <span className="underline underline-offset-2">Open in TradingView</span>
-            {" "}above for the live chart in the meantime.
+            For reliable inline charts, set{" "}
+            <code className="font-mono text-[11px] px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-800">
+              TWELVE_DATA_API_KEY
+            </code>{" "}
+            in <code className="font-mono">.env.local</code> (free signup at{" "}
+            <a
+              href="https://twelvedata.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-2 hover:text-slate-700 dark:hover:text-slate-200"
+            >
+              twelvedata.com
+            </a>
+            ).
+          </p>
+          <p className="text-xs">
+            Or click{" "}
+            <span className="underline underline-offset-2">Open in TradingView</span>{" "}
+            above for the live chart now.
           </p>
         </div>
       </div>

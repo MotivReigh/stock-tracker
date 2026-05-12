@@ -7,7 +7,7 @@
  */
 import { getCachedQuote } from "@/lib/cache/quoteCache";
 import { fetchProfile } from "@/lib/finnhub/profile";
-import { fetchYahooCandles } from "@/lib/yahoo/candles";
+import { fetchDailyCandles } from "@/lib/market/candles";
 import { fetchCompanyNews } from "@/lib/finnhub/news";
 import { cacheGet, cacheSet, cacheKey, CACHE_TTL } from "@/lib/cache/redis";
 import type {
@@ -75,17 +75,14 @@ async function getCachedCandles(symbol: string): Promise<DailyBar[]> {
 
   const to = Math.floor(Date.now() / 1000);
   const from = to - CANDLES_LOOKBACK_DAYS * 24 * 60 * 60;
-  try {
-    const raw = await fetchYahooCandles(symbol, from, to, "1d");
-    const bars = normalizeCandles(raw);
-    if (bars.length > 0) {
-      await cacheSet(key, bars, CACHE_TTL.candlesDaily);
-    }
-    return bars;
-  } catch (err) {
-    console.warn(`[stock/${symbol}] candles fetch failed:`, err);
-    return [];
+  const result = await fetchDailyCandles(symbol, from, to);
+  const bars = normalizeCandles(result.candles);
+  if (bars.length > 0) {
+    await cacheSet(key, bars, CACHE_TTL.candlesDaily);
+  } else if (result.error) {
+    console.warn(`[stock/${symbol}] candle providers failed: ${result.error}`);
   }
+  return bars;
 }
 
 async function getCachedProfile(
