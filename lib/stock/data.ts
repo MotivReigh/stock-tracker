@@ -9,11 +9,15 @@ import { getCachedQuote } from "@/lib/cache/quoteCache";
 import { fetchProfile } from "@/lib/finnhub/profile";
 import { fetchDailyCandles } from "@/lib/market/candles";
 import { fetchCompanyNews } from "@/lib/finnhub/news";
+import { fetchMetrics } from "@/lib/finnhub/metrics";
+import { fetchRecommendations } from "@/lib/finnhub/recommendations";
 import { cacheGet, cacheSet, cacheKey, CACHE_TTL } from "@/lib/cache/redis";
 import type {
   FinnhubProfile,
   FinnhubCandles,
   FinnhubNewsItem,
+  FinnhubMetric,
+  FinnhubRecommendation,
   Quote,
 } from "@/lib/finnhub/types";
 import { highestClose, lowestClose, average } from "@/lib/indicators";
@@ -36,13 +40,15 @@ export type StockDetail = {
   profile: FinnhubProfile | null;
   bars: DailyBar[];
   news: FinnhubNewsItem[];
+  /** Finnhub paid: fundamental metrics. Null if the endpoint fails. */
+  metrics: FinnhubMetric["metric"] | null;
+  /** Finnhub paid: analyst recommendations, newest first. */
+  recommendations: FinnhubRecommendation[];
   derived: {
-    /** Trailing 252 sessions (~1 year). */
+    /** Trailing 252 sessions from bars — fallback when metrics endpoint lacks the field. */
     high52w: number | null;
     low52w: number | null;
-    /** Trailing 20 sessions of volume. */
     avgVol20d: number | null;
-    /** Today's volume / 20d avg. */
     relVol: number | null;
   };
   asOf: number;
@@ -120,6 +126,39 @@ async function getCachedCompanyNews(symbol: string): Promise<FinnhubNewsItem[]> 
   }
 }
 
+async function getCachedMetrics(
+  symbol: string,
+): Promise<FinnhubMetric["metric"] | null> {
+  const key = cacheKey("metric", symbol);
+  const cached = await cacheGet<FinnhubMetric["metric"]>(key);
+  if (cached) return cached;
+  try {
+    const raw = await fetchMetrics(symbol);
+    const metric = raw.metric ?? null;
+    if (metric) await cacheSet(key, metric, CACHE_TTL.profile);
+    return metric;
+  } catch (err) {
+    console.warn(`[stock/${symbol}] metrics fetch failed:`, err);
+    return null;
+  }
+}
+
+async function getCachedRecommendations(
+  symbol: string,
+): Promise<FinnhubRecommendation[]> {
+  const key = cacheKey("recommendation", symbol);
+  const cached = await cacheGet<FinnhubRecommendation[]>(key);
+  if (cached) return cached;
+  try {
+    const list = await fetchRecommendations(symbol);
+    await cacheSet(key, list, CACHE_TTL.profile);
+    return list;
+  } catch (err) {
+    console.warn(`[stock/${symbol}] recommendations fetch failed:`, err);
+    return [];
+  }
+}
+
 function computeDerived(bars: DailyBar[], todayVolume: number) {
   if (bars.length === 0) {
     return { high52w: null, low52w: null, avgVol20d: null, relVol: null };
@@ -154,12 +193,15 @@ function isEmptyProfile(p: FinnhubProfile | null): boolean {
 
 export async function getStockDetail(symbol: string): Promise<StockDetail> {
   const sym = symbol.toUpperCase();
-  const [rawQuote, rawProfile, bars, news] = await Promise.all([
-    getCachedQuote(sym).then((r) => r.quote).catch(() => null),
-    getCachedProfile(sym),
-    getCachedCandles(sym),
-    getCachedCompanyNews(sym),
-  ]);
+  const [rawQuote, rawProfile, bars, news, metrics, recommendations] =
+    await Promise.all([
+      getCachedQuote(sym).then((r) => r.quote).catch(() => null),
+      getCachedProfile(sym),
+      getCachedCandles(sym),
+      getCachedCompanyNews(sym),
+      getCachedMetrics(sym),
+      getCachedRecommendations(sym),
+    ]);
 
   const quote = isEmptyQuote(rawQuote) ? null : rawQuote;
   const profile = isEmptyProfile(rawProfile) ? null : rawProfile;
@@ -172,6 +214,8 @@ export async function getStockDetail(symbol: string): Promise<StockDetail> {
     profile,
     bars,
     news,
+    metrics,
+    recommendations,
     derived,
     asOf: Date.now(),
   };

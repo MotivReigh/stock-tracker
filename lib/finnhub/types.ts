@@ -83,3 +83,72 @@ export function normalizeQuote(symbol: string, q: FinnhubQuote): Quote {
     asOf: q.t * 1000,
   };
 }
+
+/* -------------------------------------------------------------------------- */
+/* Paid-tier endpoints (Finnhub Starter+)                                      */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Response from /stock/metric?metric=all.
+ * Finnhub returns hundreds of fields; we type the ones the UI consumes.
+ * Numeric-prefix property names (e.g. "52WeekHigh") use string-literal syntax.
+ */
+export type FinnhubMetric = {
+  metric?: {
+    // Valuation
+    peBasicExclExtraTTM?: number;
+    peNormalizedAnnual?: number;
+    peExclExtraAnnual?: number;
+    pbAnnual?: number;
+    psAnnual?: number;
+
+    // Earnings
+    epsBasicExclExtraItemsTTM?: number;
+    epsTTM?: number;
+    epsInclExtraItemsAnnual?: number;
+
+    // Risk
+    beta?: number;
+
+    // 52-week range (Finnhub's authoritative numbers)
+    "52WeekHigh"?: number;
+    "52WeekLow"?: number;
+    "52WeekHighDate"?: string;
+    "52WeekLowDate"?: string;
+
+    // Multi-period total returns
+    "5DayPriceReturnDaily"?: number;
+    "13WeekPriceReturnDaily"?: number;
+    "26WeekPriceReturnDaily"?: number;
+    "52WeekPriceReturnDaily"?: number;
+    "ytdPriceReturnDaily"?: number;
+    monthToDatePriceReturnDaily?: number;
+
+    // Volume
+    "10DayAverageTradingVolume"?: number;
+    "3MonthAverageTradingVolume"?: number;
+
+    // Dividend
+    dividendYieldIndicatedAnnual?: number;
+    dividendsPerShareAnnual?: number;
+
+    // Quality
+    roeTTM?: number;
+    roaTTM?: number;
+    bookValuePerShareAnnual?: number;
+    currentRatioAnnual?: number;
+  };
+  metricType?: string;
+  symbol?: string;
+};
+
+/** One row from /stock/recommendation (Finnhub returns array, newest first). */
+export type FinnhubRecommendation = {
+  buy: number;
+  hold: number;
+  period: string; // "YYYY-MM-DD" of the month-start
+  sell: number;
+  strongBuy: number;
+  strongSell: number;
+  symbol: string;
+};

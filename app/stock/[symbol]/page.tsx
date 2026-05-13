@@ -5,6 +5,7 @@ import { KeyStats } from "@/components/stock/key-stats";
 import { NewsList } from "@/components/stock/news-list";
 import { JournalPlaceholder } from "@/components/stock/journal-placeholder";
 import { PriceChart } from "@/components/stock/price-chart";
+import { RecommendationsPanel } from "@/components/stock/recommendations-panel";
 import { getStockDetail, isStockUnknown } from "@/lib/stock/data";
 import { getCurrentUserId } from "@/lib/auth/user";
 import {
@@ -47,8 +48,12 @@ export default async function StockDetailPage({
         />
         <div className="p-4 sm:p-6 space-y-4">
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-            <div className="xl:col-span-2">
+            <div className="xl:col-span-2 space-y-4">
               <PriceChart bars={detail.bars} />
+              <RecommendationsPanel
+                recommendations={detail.recommendations}
+                symbol={detail.symbol}
+              />
             </div>
             <div className="xl:col-span-1">
               <KeyStats detail={detail} />
