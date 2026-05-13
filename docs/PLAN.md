@@ -209,11 +209,12 @@ tests/
 29. Settings page complete — restructured into three groups: Notifications (push + slack + sms), Appearance (theme + dashboard layout pickers backed by `DisplayPreferences`), Account (`AccountInfo` with sign-out via new `logoutAction`, plus instructions for rotating `APP_PASSWORD`).
 
 ### Phase 10 — Deploy
-30. Push to GitHub
-31. Connect Vercel; set env vars
-32. Provision Supabase project + run migrations
-33. Provision Redis (Redis Cloud / self-hosted / Upstash TCP)
-34. Configure cron jobs + verify universe seed + first scan run
+Full step-by-step in [docs/DEPLOY.md](DEPLOY.md). Codebase-side prep landed:
+- `vercel.json` registers three crons: run-scans (`*/10 13-21 * * 1-5`), dispatch-alerts (`*/2 13-21 * * 1-5`), refresh-bars (`0 22 * * 1-5`). All weekday UTC, scoped to US market hours.
+- `.env.example` audited against actual reads in `app/`, `lib/`, `middleware.ts`, `scripts/`. Unused `SUPABASE_ANON_KEY` removed.
+- `middleware.ts` already exempts `/api/cron/*` so Vercel's bearer-auth gets through; cron auth via `authorizeCron` in `lib/auth/cron.ts`.
+
+Live deploy actions remain with the user (GitHub push, Vercel import, Supabase + Redis provisioning, env-var entry, migration + seed scripts). See `docs/DEPLOY.md` sections 1-10.
 
 ## 6. Risks and Assumptions
 

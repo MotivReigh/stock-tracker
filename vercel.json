@@ -1,0 +1,17 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "crons": [
+    {
+      "path": "/api/cron/run-scans",
+      "schedule": "*/10 13-21 * * 1-5"
+    },
+    {
+      "path": "/api/cron/dispatch-alerts",
+      "schedule": "*/2 13-21 * * 1-5"
+    },
+    {
+      "path": "/api/cron/refresh-bars",
+      "schedule": "0 22 * * 1-5"
+    }
+  ]
+}
