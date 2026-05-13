@@ -1,0 +1,21 @@
+display_information:
+  name: Updraft
+  description: Personal trend-spotter alerts — pings me when a stock scan triggers.
+  background_color: "#1e293b"
+  long_description: |
+    Updraft is a single-user trend-spotter and scan runner for the US $2B+ stock
+    universe. This Slack app receives Block Kit notifications via an incoming
+    webhook whenever a scan triggers a fresh symbol. Personal use only;
+    no commands, no events, no slash interactions.
+features:
+  bot_user:
+    display_name: Updraft
+    always_online: false
+oauth_config:
+  scopes:
+    bot:
+      - incoming-webhook
+settings:
+  org_deploy_enabled: false
+  socket_mode_enabled: false
+  token_rotation_enabled: false

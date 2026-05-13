@@ -135,8 +135,32 @@ pages drive on-demand refresh.
 5. Go to `/settings`:
    - Grant browser push, then click "Send test push" → notification arrives.
    - Paste your Slack incoming-webhook URL, click "Send test message" →
-     Slack receives a Block Kit payload.
+     Slack receives a Block Kit payload. See "Slack app" below for the
+     one-shot manifest that pre-fills the app config.
    - Confirm Appearance + Account sections render.
+
+## Slack app (incoming webhook)
+
+The Slack webhook URL is stored per-user in `updraft_settings.slack_webhook_url`
+(set via the Settings page UI), not in env vars — keeps it out of git and
+rotatable without redeploying.
+
+To create the app:
+
+1. Go to https://api.slack.com/apps → **Create New App** → **From an app
+   manifest** → pick your workspace.
+2. Paste the contents of [docs/slack-app-manifest.yml](slack-app-manifest.yml)
+   into the manifest editor (YAML tab) → **Next** → **Create**.
+3. In the new app, **Install to Workspace** → pick the channel or DM that
+   should receive alerts → **Allow**.
+4. **Features → Incoming Webhooks** → copy the **Webhook URL** that Slack
+   generated for the chosen channel.
+5. In Updraft, go to `/settings` → **Notifications** → **Slack** → paste the
+   URL → **Save** → **Send test message**.
+
+To rotate the webhook later, repeat step 3 to install to a different channel,
+or delete the existing webhook in the Slack app config and add a new one. Then
+paste the new URL into `/settings`.
 
 ## 8 · Manual cron trigger (debugging)
 
