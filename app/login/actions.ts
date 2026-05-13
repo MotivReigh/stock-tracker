@@ -33,3 +33,9 @@ export async function loginAction(formData: FormData): Promise<void> {
   const safeFrom = from.startsWith("/") && !from.startsWith("//") ? from : "/";
   redirect(safeFrom);
 }
+
+export async function logoutAction(): Promise<void> {
+  const jar = await cookies();
+  jar.delete(COOKIE_NAME);
+  redirect("/login");
+}

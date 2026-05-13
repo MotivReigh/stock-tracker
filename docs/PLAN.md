@@ -202,11 +202,11 @@ tests/
 ### Phase 8 — Journal
 25. Per-stock notes editor (markdown), pinned on stock detail page; global journal page lists all notes
 
-### Phase 9 — Polish
-26. Mobile responsive pass on every screen
-27. Empty states, loading skeletons, error boundaries
-28. "Personal use only — not financial advice" disclaimer banner + footer (every page)
-29. Settings page complete: notification prefs, slack webhook, theme, password change
+### Phase 9 — Polish ✓
+26. Mobile responsive pass on every screen — done; all pages use `p-4 sm:p-6`, responsive grids, `overflow-x-auto` on data tables, mobile drawer for nav, hidden search on small screens.
+27. Empty states, loading skeletons, error boundaries — done. Global `app/loading.tsx`, `app/error.tsx`, `app/not-found.tsx` plus route-segment `loading.tsx` for stock detail, scans (list + detail), watchlists (list + detail), alerts, journal, settings. New `<Skeleton>` primitive in `components/ui/skeleton.tsx`. Empty states present on journal, watchlists, scans (custom), alerts, dashboard panels, watchlist items table.
+28. "Personal use only — not financial advice" disclaimer banner + footer (every page) — done via `<Shell>` wrapper (banner above top nav + footer below content). Login page also carries the disclaimer.
+29. Settings page complete — restructured into three groups: Notifications (push + slack + sms), Appearance (theme + dashboard layout pickers backed by `DisplayPreferences`), Account (`AccountInfo` with sign-out via new `logoutAction`, plus instructions for rotating `APP_PASSWORD`).
 
 ### Phase 10 — Deploy
 30. Push to GitHub
