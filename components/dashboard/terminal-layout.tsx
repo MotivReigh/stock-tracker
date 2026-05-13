@@ -21,7 +21,7 @@ export function TerminalLayout({ data }: { data: DashboardData }) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-        <AlertsPlaceholder />
+        <AlertsLogPanel alerts={data.alerts} />
         <WatchlistPanel watchlist={data.watchlist} />
         <NewsPanel news={data.news} variant="terminal" />
       </div>
@@ -252,20 +252,74 @@ function sectorTone(pct: number): string {
   return "bg-rose-200 dark:bg-rose-900/50";
 }
 
-/* --- Placeholders for Phase 6/7 --- */
-
-function AlertsPlaceholder() {
+function AlertsLogPanel({ alerts }: { alerts: DashboardData["alerts"] }) {
+  if (alerts.length === 0) {
+    return (
+      <div className="border border-app">
+        <div className="px-3 py-2 border-b border-app bg-slate-50 dark:bg-slate-900/50">
+          <h3 className="font-bold text-[13px] uppercase tracking-wider">Alerts Log</h3>
+        </div>
+        <div className="px-4 py-8 text-center">
+          <p className="text-sm text-muted">No alerts yet</p>
+          <Link
+            href="/settings"
+            className="text-[11px] text-terminal-600 dark:text-terminal-400 mt-1 font-mono inline-block hover:underline"
+          >
+            configure push / slack →
+          </Link>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="border border-app">
-      <div className="px-3 py-2 border-b border-app bg-slate-50 dark:bg-slate-900/50">
+      <div className="px-3 py-2 border-b border-app bg-slate-50 dark:bg-slate-900/50 flex items-center justify-between">
         <h3 className="font-bold text-[13px] uppercase tracking-wider">Alerts Log</h3>
+        <Link
+          href="/alerts"
+          className="text-[10px] font-mono text-muted hover:text-slate-700 dark:hover:text-slate-200"
+        >
+          view all →
+        </Link>
       </div>
-      <div className="px-4 py-8 text-center">
-        <p className="text-sm text-muted">No alerts yet</p>
-        <p className="text-[11px] text-muted mt-1 font-mono">phase 7 · scan triggers will appear here</p>
-      </div>
+      <ul className="text-[12px] divide-y divide-slate-100 dark:divide-slate-800">
+        {alerts.map((a) => {
+          const s = a.scanResult.snapshot;
+          const pctVal = s.pctChange1d ?? 0;
+          const up = pctVal >= 0;
+          return (
+            <li
+              key={a.id}
+              className="px-3 py-2 grid grid-cols-[48px_1fr_auto] gap-2 items-center hover:bg-slate-50 dark:hover:bg-slate-800/50"
+            >
+              <span className="text-[10px] font-mono text-muted">
+                {formatHHMM(new Date(a.fired_at))}
+              </span>
+              <div className="min-w-0">
+                <Link
+                  href={`/stock/${a.scanResult.symbol}`}
+                  className="font-bold font-mono hover:underline"
+                >
+                  {a.scanResult.symbol}
+                </Link>
+                <span className="text-muted text-[11px] ml-2 truncate inline-block max-w-[180px] align-middle">
+                  {a.scan.name}
+                </span>
+              </div>
+              <span className={cn("font-mono font-semibold", up ? "gain" : "loss")}>
+                {pctVal >= 0 ? "+" : ""}
+                {pctVal.toFixed(2)}%
+              </span>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
+}
+
+function formatHHMM(d: Date): string {
+  return d.toTimeString().slice(0, 5);
 }
 
 function WatchlistPanel({ watchlist }: { watchlist: DashboardData["watchlist"] }) {

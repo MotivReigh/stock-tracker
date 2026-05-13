@@ -3,7 +3,8 @@ import { Shell } from "@/components/layout/shell";
 import { StockHeader } from "@/components/stock/stock-header";
 import { KeyStats } from "@/components/stock/key-stats";
 import { NewsList } from "@/components/stock/news-list";
-import { JournalPlaceholder } from "@/components/stock/journal-placeholder";
+import { JournalSection } from "@/components/journal/journal-section";
+import { listNotesForSymbol } from "@/lib/journal/queries";
 import { PriceChart } from "@/components/stock/price-chart";
 import { RecommendationsPanel } from "@/components/stock/recommendations-panel";
 import { getStockDetail, isStockUnknown } from "@/lib/stock/data";
@@ -32,9 +33,10 @@ export default async function StockDetailPage({
   }
 
   const userId = getCurrentUserId();
-  const [allLists, containingIds] = await Promise.all([
+  const [allLists, containingIds, notes] = await Promise.all([
     listWatchlists(userId),
     listWatchlistsContainingSymbol(userId, detail.symbol),
+    listNotesForSymbol(userId, detail.symbol),
   ]);
   const watchlistEntries = allLists.map((l) => ({ id: l.id, name: l.name }));
 
@@ -65,7 +67,7 @@ export default async function StockDetailPage({
               <NewsList news={detail.news} symbol={detail.symbol} />
             </div>
             <div className="lg:col-span-1">
-              <JournalPlaceholder symbol={detail.symbol} />
+              <JournalSection symbol={detail.symbol} notes={notes} />
             </div>
           </div>
         </div>

@@ -70,7 +70,7 @@ export function EditorialLayout({ data }: { data: DashboardData }) {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <NewsList news={data.news} />
-            <AlertsPlaceholderEditorial />
+            <AlertsAside alerts={data.alerts} />
           </div>
         </section>
 
@@ -385,17 +385,74 @@ function NewsList({ news }: { news: DashboardData["news"] }) {
   );
 }
 
-function AlertsPlaceholderEditorial() {
+function AlertsAside({ alerts }: { alerts: DashboardData["alerts"] }) {
   return (
     <aside>
       <h3 className="font-serif text-xl font-bold mb-3">
-        Live Alerts <span className="text-xs text-muted font-normal">· phase 7</span>
+        Live Alerts{" "}
+        {alerts.length > 0 && (
+          <span className="text-xs text-muted font-normal">
+            · {alerts.length} recent
+          </span>
+        )}
       </h3>
       <div className="border-t border-ink/40 dark:border-slate-700 mb-3" />
-      <p className="text-sm text-muted py-3">
-        Once scans are running, triggered alerts will land here as well as on Slack and your
-        browser push.
-      </p>
+      {alerts.length === 0 ? (
+        <p className="text-sm text-muted py-3">
+          No alerts yet.{" "}
+          <Link
+            href="/settings"
+            className="underline underline-offset-4 hover:text-editorial-700 dark:hover:text-amber-400"
+          >
+            Connect Slack or browser push →
+          </Link>
+        </p>
+      ) : (
+        <ul className="divide-y divide-stone-300 dark:divide-slate-700">
+          {alerts.map((a) => {
+            const s = a.scanResult.snapshot;
+            const pctVal = s.pctChange1d ?? 0;
+            const up = pctVal >= 0;
+            return (
+              <li key={a.id} className="py-3">
+                <div className="flex items-baseline gap-2 mb-1 flex-wrap">
+                  <Link
+                    href={`/stock/${a.scanResult.symbol}`}
+                    className="font-serif text-base font-bold hover:underline"
+                  >
+                    {a.scanResult.symbol}
+                  </Link>
+                  <span className="text-[10px] uppercase tracking-widest text-editorial-700 dark:text-amber-400 font-semibold">
+                    {a.scan.name}
+                  </span>
+                  <span className="ml-auto font-mono text-[11px] text-muted">
+                    {formatRelativeTime(new Date(a.fired_at).getTime())}
+                  </span>
+                </div>
+                <p className="text-sm text-stone-700 dark:text-slate-300 font-mono">
+                  ${s.price?.toFixed(2) ?? "—"}{" "}
+                  <span className={cn(up ? "gain" : "loss")}>
+                    ({pctVal >= 0 ? "+" : ""}
+                    {pctVal.toFixed(2)}%)
+                  </span>
+                  {s.relVol !== null && (
+                    <span className="text-muted"> · vol {s.relVol.toFixed(2)}×</span>
+                  )}
+                </p>
+                <div className="mt-1 text-[10px] font-mono text-muted">
+                  delivered: {a.channels.join(" · ")}
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      <Link
+        href="/alerts"
+        className="text-xs uppercase tracking-widest underline underline-offset-4 mt-3 inline-block hover:text-editorial-700 dark:hover:text-amber-400"
+      >
+        Open alerts inbox →
+      </Link>
     </aside>
   );
 }

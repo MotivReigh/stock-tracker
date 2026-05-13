@@ -12,6 +12,7 @@ import { POPULAR_SYMBOLS, INDEX_TAPE_SYMBOLS } from "./popular-symbols";
 import { isMarketOpen } from "@/lib/market/calendar";
 import { getCurrentUserId } from "@/lib/auth/user";
 import { listWatchlists, listItems } from "@/lib/watchlists/queries";
+import { listRecentAlerts, type AlertWithContext } from "@/lib/alerts/queries";
 import type { Quote } from "@/lib/finnhub/types";
 import type { FinnhubNewsItem } from "@/lib/finnhub/types";
 
@@ -67,6 +68,7 @@ export type DashboardData = {
   highlights: Highlight[];
   news: FinnhubNewsItem[];
   watchlist: WatchlistPreview | null;
+  alerts: AlertWithContext[];
 };
 
 function quoteToMover(symbol: string, q: Quote): Mover {
@@ -235,13 +237,23 @@ function computeHighlights(movers: Mover[]): Highlight[] {
   return out;
 }
 
+async function getRecentAlertsForDashboard(): Promise<AlertWithContext[]> {
+  try {
+    return await listRecentAlerts(getCurrentUserId(), 5);
+  } catch (err) {
+    console.error("[dashboard] alerts fetch failed:", err);
+    return [];
+  }
+}
+
 export async function getDashboardData(): Promise<DashboardData> {
-  const [indices, sectors, movers, news, watchlist] = await Promise.all([
+  const [indices, sectors, movers, news, watchlist, alerts] = await Promise.all([
     getIndices(),
     getSectors(),
     getMovers(),
     getNews(),
     getWatchlistPreview().catch(() => null),
+    getRecentAlertsForDashboard(),
   ]);
 
   return {
@@ -253,5 +265,6 @@ export async function getDashboardData(): Promise<DashboardData> {
     highlights: computeHighlights(movers),
     news,
     watchlist,
+    alerts,
   };
 }
