@@ -13,7 +13,9 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "db:migrate": "tsx scripts/migrate.ts",
-    "db:seed": "tsx scripts/seed-universe.ts"
+    "db:seed": "tsx scripts/seed-universe.ts",
+    "db:seed-presets": "tsx scripts/seed-presets.ts",
+    "bars:refresh": "tsx scripts/refresh-bars.ts"
   },
   "dependencies": {
     "next": "^15.0.3",
