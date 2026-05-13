@@ -6,6 +6,11 @@ import { NewsList } from "@/components/stock/news-list";
 import { JournalPlaceholder } from "@/components/stock/journal-placeholder";
 import { PriceChart } from "@/components/stock/price-chart";
 import { getStockDetail, isStockUnknown } from "@/lib/stock/data";
+import { getCurrentUserId } from "@/lib/auth/user";
+import {
+  listWatchlists,
+  listWatchlistsContainingSymbol,
+} from "@/lib/watchlists/queries";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -25,10 +30,21 @@ export default async function StockDetailPage({
     notFound();
   }
 
+  const userId = getCurrentUserId();
+  const [allLists, containingIds] = await Promise.all([
+    listWatchlists(userId),
+    listWatchlistsContainingSymbol(userId, detail.symbol),
+  ]);
+  const watchlistEntries = allLists.map((l) => ({ id: l.id, name: l.name }));
+
   return (
     <Shell>
       <div className="min-h-full">
-        <StockHeader detail={detail} />
+        <StockHeader
+          detail={detail}
+          watchlists={watchlistEntries}
+          containingIds={containingIds}
+        />
         <div className="p-4 sm:p-6 space-y-4">
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
             <div className="xl:col-span-2">

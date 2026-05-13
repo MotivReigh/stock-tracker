@@ -10,6 +10,8 @@ import { cacheGet, cacheSet, cacheKey, CACHE_TTL } from "@/lib/cache/redis";
 import { SECTOR_ETFS } from "@/lib/market/sectors";
 import { POPULAR_SYMBOLS, INDEX_TAPE_SYMBOLS } from "./popular-symbols";
 import { isMarketOpen } from "@/lib/market/calendar";
+import { getCurrentUserId } from "@/lib/auth/user";
+import { listWatchlists, listItems } from "@/lib/watchlists/queries";
 import type { Quote } from "@/lib/finnhub/types";
 import type { FinnhubNewsItem } from "@/lib/finnhub/types";
 
@@ -45,6 +47,17 @@ export type Highlight =
   | { kind: "biggestRange"; mover: Mover; rangePct: number }
   | { kind: "biggestGap"; mover: Mover; gapPct: number };
 
+export type WatchlistPreview = {
+  id: string;
+  name: string;
+  totalCount: number;
+  rows: Array<{
+    symbol: string;
+    price: number;
+    changePercent: number;
+  }>;
+};
+
 export type DashboardData = {
   asOf: number;
   marketOpen: boolean;
@@ -53,6 +66,7 @@ export type DashboardData = {
   movers: Mover[];
   highlights: Highlight[];
   news: FinnhubNewsItem[];
+  watchlist: WatchlistPreview | null;
 };
 
 function quoteToMover(symbol: string, q: Quote): Mover {
@@ -135,6 +149,33 @@ async function getIndices(): Promise<IndexRow[]> {
   );
 }
 
+async function getWatchlistPreview(): Promise<WatchlistPreview | null> {
+  const userId = getCurrentUserId();
+  const lists = await listWatchlists(userId);
+  if (lists.length === 0) return null;
+
+  const list = lists[0];
+  const items = await listItems(list.id);
+  if (items.length === 0) {
+    return { id: list.id, name: list.name, totalCount: 0, rows: [] };
+  }
+
+  const previewSymbols = items.slice(0, 5).map((i) => i.symbol);
+  const quotes = await Promise.allSettled(
+    previewSymbols.map(async (sym) => {
+      const r = await getCachedQuote(sym);
+      return {
+        symbol: sym,
+        price: r.quote.price,
+        changePercent: r.quote.changePercent,
+      };
+    }),
+  );
+
+  const rows = quotes.flatMap((q) => (q.status === "fulfilled" ? [q.value] : []));
+  return { id: list.id, name: list.name, totalCount: items.length, rows };
+}
+
 async function getNews(): Promise<FinnhubNewsItem[]> {
   const key = cacheKey("news", "general");
   const cached = await cacheGet<FinnhubNewsItem[]>(key);
@@ -195,11 +236,12 @@ function computeHighlights(movers: Mover[]): Highlight[] {
 }
 
 export async function getDashboardData(): Promise<DashboardData> {
-  const [indices, sectors, movers, news] = await Promise.all([
+  const [indices, sectors, movers, news, watchlist] = await Promise.all([
     getIndices(),
     getSectors(),
     getMovers(),
     getNews(),
+    getWatchlistPreview().catch(() => null),
   ]);
 
   return {
@@ -210,5 +252,6 @@ export async function getDashboardData(): Promise<DashboardData> {
     movers,
     highlights: computeHighlights(movers),
     news,
+    watchlist,
   };
 }

@@ -22,7 +22,7 @@ export function TerminalLayout({ data }: { data: DashboardData }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
         <AlertsPlaceholder />
-        <WatchlistPlaceholder />
+        <WatchlistPanel watchlist={data.watchlist} />
         <NewsPanel news={data.news} variant="terminal" />
       </div>
     </div>
@@ -268,18 +268,82 @@ function AlertsPlaceholder() {
   );
 }
 
-function WatchlistPlaceholder() {
+function WatchlistPanel({ watchlist }: { watchlist: DashboardData["watchlist"] }) {
+  if (!watchlist) {
+    return (
+      <div className="border border-app">
+        <div className="px-3 py-2 border-b border-app bg-slate-50 dark:bg-slate-900/50">
+          <h3 className="font-bold text-[13px] uppercase tracking-wider">Watchlist</h3>
+        </div>
+        <div className="px-4 py-8 text-center">
+          <p className="text-sm text-muted">No watchlists yet</p>
+          <Link
+            href="/watchlists"
+            className="text-[11px] text-terminal-600 dark:text-terminal-400 mt-1 font-mono inline-block hover:underline"
+          >
+            create one →
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="border border-app">
-      <div className="px-3 py-2 border-b border-app bg-slate-50 dark:bg-slate-900/50">
-        <h3 className="font-bold text-[13px] uppercase tracking-wider">Watchlist</h3>
-      </div>
-      <div className="px-4 py-8 text-center">
-        <p className="text-sm text-muted">No watchlists yet</p>
-        <Link href="/watchlists" className="text-[11px] text-terminal-600 dark:text-terminal-400 mt-1 font-mono inline-block hover:underline">
-          phase 5 · create one →
+      <div className="px-3 py-2 border-b border-app bg-slate-50 dark:bg-slate-900/50 flex items-center justify-between">
+        <h3 className="font-bold text-[13px] uppercase tracking-wider">
+          {watchlist.name}
+        </h3>
+        <Link
+          href={`/watchlists/${watchlist.id}`}
+          className="text-[10px] font-mono text-muted hover:text-slate-700 dark:hover:text-slate-200"
+        >
+          {watchlist.totalCount} tickers · open →
         </Link>
       </div>
+      {watchlist.rows.length === 0 ? (
+        <div className="px-4 py-8 text-center">
+          <p className="text-sm text-muted">List is empty</p>
+          <Link
+            href={`/watchlists/${watchlist.id}`}
+            className="text-[11px] text-terminal-600 dark:text-terminal-400 mt-1 font-mono inline-block hover:underline"
+          >
+            add symbols →
+          </Link>
+        </div>
+      ) : (
+        <table className="w-full text-[12px] font-mono">
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+            {watchlist.rows.map((r) => {
+              const up = r.changePercent >= 0;
+              return (
+                <tr
+                  key={r.symbol}
+                  className="hover:bg-terminal-50/40 dark:hover:bg-terminal-700/10"
+                >
+                  <td className="px-3 py-1.5">
+                    <Link
+                      href={`/stock/${r.symbol}`}
+                      className="font-bold hover:underline"
+                    >
+                      {r.symbol}
+                    </Link>
+                  </td>
+                  <td className="px-2 text-right">{r.price.toFixed(2)}</td>
+                  <td
+                    className={cn(
+                      "px-2 text-right font-semibold",
+                      up ? "gain" : "loss",
+                    )}
+                  >
+                    {pct(r.changePercent)}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }

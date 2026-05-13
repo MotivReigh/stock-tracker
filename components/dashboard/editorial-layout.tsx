@@ -56,7 +56,7 @@ export function EditorialLayout({ data }: { data: DashboardData }) {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <TopMoversList movers={data.movers.slice(0, 8)} />
             <SectorStrengthList data={data} />
-            <WatchlistPanel />
+            <WatchlistPanel watchlist={data.watchlist} />
           </div>
         </section>
 
@@ -277,21 +277,80 @@ function SectorStrengthList({ data }: { data: DashboardData }) {
   );
 }
 
-function WatchlistPanel() {
+function WatchlistPanel({
+  watchlist,
+}: {
+  watchlist: DashboardData["watchlist"];
+}) {
+  if (!watchlist) {
+    return (
+      <div>
+        <h3 className="font-serif text-xl font-bold mb-3">My Watchlist</h3>
+        <div className="border-t border-ink/40 dark:border-slate-700 mb-2" />
+        <div className="text-sm text-muted py-6">
+          No watchlists yet.{" "}
+          <Link
+            href="/watchlists"
+            className="underline underline-offset-4 hover:text-editorial-700 dark:hover:text-amber-400"
+          >
+            Create one →
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
-      <h3 className="font-serif text-xl font-bold mb-3">My Watchlist</h3>
+      <h3 className="font-serif text-xl font-bold mb-3">
+        {watchlist.name}{" "}
+        <span className="text-xs text-muted font-normal">
+          · {watchlist.totalCount} tickers
+        </span>
+      </h3>
       <div className="border-t border-ink/40 dark:border-slate-700 mb-2" />
-      <div className="text-sm text-muted py-6">
-        No watchlists yet.{" "}
-        <Link
-          href="/watchlists"
-          className="underline underline-offset-4 hover:text-editorial-700 dark:hover:text-amber-400"
-        >
-          Create one →
-        </Link>
-        <p className="text-xs mt-2">Phase 5 · unlimited named lists</p>
-      </div>
+      {watchlist.rows.length === 0 ? (
+        <p className="text-sm text-muted py-3">
+          Empty list.{" "}
+          <Link
+            href={`/watchlists/${watchlist.id}`}
+            className="underline underline-offset-4 hover:text-editorial-700 dark:hover:text-amber-400"
+          >
+            Add symbols →
+          </Link>
+        </p>
+      ) : (
+        <ul className="divide-y divide-stone-300 dark:divide-slate-700 text-sm">
+          {watchlist.rows.map((r) => {
+            const up = r.changePercent >= 0;
+            return (
+              <li
+                key={r.symbol}
+                className="py-2 flex items-baseline justify-between gap-3"
+              >
+                <Link
+                  href={`/stock/${r.symbol}`}
+                  className="font-serif font-semibold hover:underline"
+                >
+                  {r.symbol}
+                </Link>
+                <div className="font-mono text-sm whitespace-nowrap">
+                  ${r.price.toFixed(2)}{" "}
+                  <span className={cn("text-xs", up ? "gain" : "loss")}>
+                    {pct(r.changePercent)}
+                  </span>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      <Link
+        href={`/watchlists/${watchlist.id}`}
+        className="text-xs uppercase tracking-widest underline underline-offset-4 mt-3 inline-block hover:text-editorial-700 dark:hover:text-amber-400"
+      >
+        Open full list →
+      </Link>
     </div>
   );
 }

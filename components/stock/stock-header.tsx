@@ -2,9 +2,20 @@ import { ArrowLeft, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { TradingViewLink } from "./tradingview-link";
+import { AddToWatchlistButton } from "./add-to-watchlist-button";
 import type { StockDetail } from "@/lib/stock/data";
 
-export function StockHeader({ detail }: { detail: StockDetail }) {
+type WatchlistEntry = { id: string; name: string };
+
+export function StockHeader({
+  detail,
+  watchlists,
+  containingIds,
+}: {
+  detail: StockDetail;
+  watchlists: WatchlistEntry[];
+  containingIds: string[];
+}) {
   const { symbol, quote, profile } = detail;
   const up = (quote?.changePercent ?? 0) >= 0;
 
@@ -75,6 +86,11 @@ export function StockHeader({ detail }: { detail: StockDetail }) {
 
           {/* Action buttons */}
           <div className="ml-auto flex items-center gap-2">
+            <AddToWatchlistButton
+              symbol={symbol}
+              watchlists={watchlists}
+              containingIds={containingIds}
+            />
             <TradingViewLink symbol={symbol} />
             {profile?.weburl && (
               <a
