@@ -6,12 +6,12 @@
  * Steps:
  *   1. Load universe + benchmark bars (SPY) + per-symbol bars in one round-trip
  *   2. Call the pure engine
- *   3. Persist results via insertResults
+ *   3. Persist results via upsertResults (dedupes re-runs by (scan_id, symbol))
  */
 import { listUniverse } from "@/lib/universe/queries";
 import { getBarsForSymbols } from "@/lib/bars/queries";
 import { runScan, type SymbolBars } from "./engine";
-import { insertResults, type ScanRow } from "./queries";
+import { upsertResults, type ScanRow } from "./queries";
 import type { Bar } from "./signals";
 
 export type RunnerResult = {
@@ -21,6 +21,7 @@ export type RunnerResult = {
   evaluated: number;
   skipped: number;
   inserted: number;
+  resultIds: string[];
   notes: string[];
 };
 
@@ -70,7 +71,7 @@ export async function runScanAndPersist(scan: ScanRow): Promise<RunnerResult> {
     universe,
   });
 
-  const inserted = await insertResults(scan.id, hits);
+  const resultIds = await upsertResults(scan.id, hits);
 
   return {
     scanId: scan.id,
@@ -78,7 +79,8 @@ export async function runScanAndPersist(scan: ScanRow): Promise<RunnerResult> {
     hits: hits.length,
     evaluated,
     skipped,
-    inserted,
+    inserted: resultIds.length,
+    resultIds,
     notes,
   };
 }

@@ -14,7 +14,7 @@
  */
 import { getCurrentUserId } from "@/lib/auth/user";
 import { getSettings } from "@/lib/settings/queries";
-import { getScan, listLatestResults } from "@/lib/scans/queries";
+import { getScan } from "@/lib/scans/queries";
 import { getSupabase } from "@/lib/db/client";
 import { TABLES } from "@/lib/db/tables";
 import {
@@ -168,14 +168,16 @@ export async function dispatchPending(
 }
 
 /**
- * Called by run-scans right after inserting fresh scan_results — creates one
- * alert row per result with the user's currently-enabled channels and then
- * immediately dispatches them. Reads the most-recent N results for the scan
- * (we just inserted them) and creates alerts for any that don't already have one.
+ * Called by run-scans right after upserting scan_results — creates one alert
+ * row per result that doesn't already have one, then immediately dispatches.
+ *
+ * Because the persistence layer upserts on (scan_id, symbol), re-runs of the
+ * same scan return the same row IDs for already-triggered symbols. Those rows
+ * already have an alert attached, so the "skip if alert exists" check below
+ * naturally suppresses duplicate notifications on re-runs.
  */
 export async function createAndDispatchAlertsForScan(
-  scanId: string,
-  insertedCount: number,
+  resultIds: string[],
 ): Promise<DispatchSummary> {
   const empty: DispatchSummary = {
     processed: 0,
@@ -188,30 +190,31 @@ export async function createAndDispatchAlertsForScan(
     },
     errors: [],
   };
-  if (insertedCount === 0) return empty;
+  if (resultIds.length === 0) return empty;
 
   const userId = getCurrentUserId();
   const settings = await getSettings(userId);
   const channels = enabledChannels(settings);
   if (channels.length === 0) return empty;
 
-  // Pick up the rows we just inserted (most recent N for this scan).
-  const recent = await listLatestResults(scanId, insertedCount);
   const supabase = getSupabase();
 
+  // One round-trip to learn which result IDs already have an alert.
+  const { data: existingAlerts } = await supabase
+    .from(TABLES.alerts)
+    .select("scan_result_id")
+    .in("scan_result_id", resultIds);
+  const claimed = new Set(
+    (existingAlerts ?? []).map((a) => a.scan_result_id as string),
+  );
+
   const newAlertIds: string[] = [];
-  for (const r of recent) {
-    // Skip if an alert already exists for this result.
-    const { data: existing } = await supabase
-      .from(TABLES.alerts)
-      .select("id")
-      .eq("scan_result_id", r.id)
-      .maybeSingle();
-    if (existing) continue;
+  for (const resultId of resultIds) {
+    if (claimed.has(resultId)) continue;
 
     const { data: inserted, error } = await supabase
       .from(TABLES.alerts)
-      .insert({ scan_result_id: r.id, channels })
+      .insert({ scan_result_id: resultId, channels })
       .select("id")
       .single();
     if (error || !inserted) continue;

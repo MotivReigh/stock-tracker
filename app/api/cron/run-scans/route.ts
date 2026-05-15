@@ -25,10 +25,11 @@ export async function GET(req: Request) {
     try {
       const r = await runScanAndPersist(scan);
 
-      // Fan out alerts for the freshly-inserted scan_results.
+      // Fan out alerts for the freshly-upserted scan_results. Re-runs reuse
+      // existing rows so duplicate alerts are skipped inside the dispatcher.
       let dispatchNotes: string[] = [];
       try {
-        const d = await createAndDispatchAlertsForScan(scan.id, r.inserted);
+        const d = await createAndDispatchAlertsForScan(r.resultIds);
         totalDispatched += d.processed;
         totalDispatchSuccesses += d.successes;
         totalDispatchFailures += d.failures;
@@ -51,6 +52,7 @@ export async function GET(req: Request) {
         evaluated: 0,
         skipped: 0,
         inserted: 0,
+        resultIds: [],
         notes: [`error: ${(err as Error).message}`],
       });
     }

@@ -69,6 +69,13 @@ async function main() {
     throw new Error("No scans seeded — run npm run db:seed-presets first");
   }
   const scan = scans[0];
+  // Migration 0002 enforces unique (scan_id, symbol); clear any prior MU row
+  // so the smoke insert always starts from a clean slate.
+  await supabase
+    .from(TABLES.scanResults)
+    .delete()
+    .eq("scan_id", scan.id)
+    .eq("symbol", "MU");
   const { data: inserted, error } = await supabase
     .from(TABLES.scanResults)
     .insert({
@@ -97,7 +104,7 @@ async function main() {
   console.log(`  ✓ Inserted synthetic scan_result for MU (scan="${scan.name}")`);
 
   console.log("\n--- 3. Dispatch alerts for the new result ---");
-  const summary = await createAndDispatchAlertsForScan(scan.id, 1);
+  const summary = await createAndDispatchAlertsForScan([inserted.id]);
   console.log(`  Processed: ${summary.processed}`);
   console.log(`  Successes: ${summary.successes}`);
   console.log(`  Failures : ${summary.failures}`);

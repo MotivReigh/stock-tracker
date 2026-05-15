@@ -3,7 +3,8 @@
  *
  * Stored shape:
  *   updraft_scans          one row per scan (preset or custom)
- *   updraft_scan_results   one row per (scan, symbol, triggered_at)
+ *   updraft_scan_results   one row per (scan, symbol) — upserted on re-run.
+ *                          Uniqueness enforced by migration 0002.
  */
 import { getSupabase } from "@/lib/db/client";
 import { TABLES } from "@/lib/db/tables";
@@ -186,22 +187,36 @@ export async function listRecentResultsForUser(
   return (data ?? []) as ScanResultRow[];
 }
 
-export async function insertResults(
+/**
+ * Upsert hits keyed on (scan_id, symbol). Re-running the same scan refreshes
+ * `triggered_at` + `snapshot` on the existing row instead of duplicating.
+ * Returns the resulting row IDs in input order so callers (e.g. the alert
+ * dispatcher) can attach side-effects to specific rows.
+ */
+export async function upsertResults(
   scanId: string,
   snapshots: ResultSnapshot[],
-): Promise<number> {
-  if (snapshots.length === 0) return 0;
+): Promise<string[]> {
+  if (snapshots.length === 0) return [];
   const supabase = getSupabase();
+  const triggeredAt = new Date().toISOString();
   const rows = snapshots.map((s) => ({
     scan_id: scanId,
     symbol: s.symbol,
     snapshot: s,
+    triggered_at: triggeredAt,
   }));
-  const { error, count } = await supabase
+  const { data, error } = await supabase
     .from(TABLES.scanResults)
-    .insert(rows, { count: "exact" });
-  if (error) throw new Error(`insertResults: ${error.message}`);
-  return count ?? snapshots.length;
+    .upsert(rows, { onConflict: "scan_id,symbol" })
+    .select("id, symbol");
+  if (error) throw new Error(`upsertResults: ${error.message}`);
+  const idBySymbol = new Map<string, string>(
+    (data ?? []).map((r) => [r.symbol as string, r.id as string]),
+  );
+  return snapshots
+    .map((s) => idBySymbol.get(s.symbol))
+    .filter((id): id is string => typeof id === "string");
 }
 
 export async function markResultSeen(resultId: string): Promise<void> {
