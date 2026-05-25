@@ -6,7 +6,7 @@ manually with the credentials only you hold.
 
 ## Prerequisites
 
-- GitHub account with a fresh empty repo named `updraft` (or any name).
+- GitHub account with a fresh empty repo named `updraft` (or any such name).
 - Vercel account (Pro recommended — cron needs sub-day cadence).
 - Supabase project (any region; the free tier is fine for this scale).
 - Redis Cloud / Upstash / self-hosted Redis with a TCP `REDIS_URL`.
